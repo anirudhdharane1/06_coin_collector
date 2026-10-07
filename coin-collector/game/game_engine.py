@@ -9,12 +9,11 @@ import random
 import pygame
 
 from game.player import Player
-from game.coin import Coin
+from game.coin import Coin, COIN_TYPES
 from game.collection import check_collection
 from game.renderer import WIDTH, HEIGHT
 
 NUM_COINS = 6
-COIN_VALUE = 1
 
 
 class GameEngine:
@@ -26,7 +25,10 @@ class GameEngine:
     def _random_coin(self):
         x = random.randint(30, WIDTH - 30)
         y = random.randint(30, HEIGHT - 30)
-        return Coin(x=x, y=y, radius=12, value=COIN_VALUE)
+        names = list(COIN_TYPES)
+        weights = [COIN_TYPES[n][2] for n in names]
+        coin_type = random.choices(names, weights=weights)[0]
+        return Coin(x=x, y=y, coin_type=coin_type, radius=12)
 
     def handle_input(self, keys_pressed):
         dx = dy = 0
