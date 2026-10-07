@@ -1,5 +1,5 @@
 """
-GameEngine: owns the player, coins and obstacles, plus lives.
+GameEngine: owns the player, coins and obstacles, plus lives and the timer.
 """
 
 import math
@@ -15,6 +15,7 @@ from game.renderer import WIDTH, HEIGHT
 NUM_COINS = 6
 NUM_OBSTACLES = 3
 STARTING_LIVES = 3
+ROUND_SECONDS = 30
 INVULNERABLE_MS = 1500   # grace period after an obstacle hit
 
 
@@ -28,6 +29,7 @@ class GameEngine:
         self.score = 0
         self.lives = STARTING_LIVES
         self.game_over = False
+        self.round_start = pygame.time.get_ticks()
         self.invulnerable_until = 0
         self.obstacles = [self._random_obstacle() for _ in range(NUM_OBSTACLES)]
         self.coins = [self._random_coin() for _ in range(NUM_COINS)]
@@ -52,9 +54,17 @@ class GameEngine:
         vy = random.choice([-1, 1]) * random.uniform(1.5, 3)
         return Obstacle(x, y, vx, vy)
 
+    # ---------- time ----------
+    @property
+    def time_left(self):
+        elapsed = (pygame.time.get_ticks() - self.round_start) / 1000
+        return max(0.0, ROUND_SECONDS - elapsed)
+
     # ---------- per frame ----------
     def handle_input(self, keys_pressed):
         if self.game_over:
+            if keys_pressed[pygame.K_r]:
+                self.reset()
             return
         dx = dy = 0
         if keys_pressed[pygame.K_UP]:
@@ -88,7 +98,7 @@ class GameEngine:
             self.lives -= 1
             self.invulnerable_until = now + INVULNERABLE_MS
 
-        if self.lives <= 0:
+        if self.lives <= 0 or self.time_left <= 0:
             self.game_over = True
 
     def draw(self, surface, font):
@@ -97,5 +107,6 @@ class GameEngine:
         renderer.draw_scene(surface, self.player, self.coins, self.obstacles, flash)
         renderer.draw_text(surface, font, f"Score: {self.score}", (10, 10))
         renderer.draw_text(surface, font, f"Lives: {self.lives}", (10, 36))
+        renderer.draw_text(surface, font, f"Time: {math.ceil(self.time_left)}", (WIDTH - 110, 10))
         if self.game_over:
-            renderer.draw_banner(surface, font, "GAME OVER")
+            renderer.draw_game_over(surface, font, self.score)

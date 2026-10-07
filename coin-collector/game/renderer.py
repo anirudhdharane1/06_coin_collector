@@ -34,3 +34,11 @@ def draw_banner(surface, font, text, dy=0):
     )
     surface.blit(surf, rect)
 
+
+def draw_game_over(surface, font, score):
+    overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 160))
+    surface.blit(overlay, (0, 0))
+    draw_banner(surface, font, "GAME OVER", dy=-30)
+    draw_banner(surface, font, f"Final score: {score}", dy=0)
+    draw_banner(surface, font, "Press R to play again", dy=30)
